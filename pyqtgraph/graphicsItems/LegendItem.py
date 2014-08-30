@@ -135,7 +135,7 @@ class LegendItem(GraphicsWidget, GraphicsWidgetAnchor):
         if angle == 45:
             self.legendLine = (2, 18, 18, 2)
         if angle == 0:
-            self.legendLine = (2, 10, 18, 10)
+            self.legendLine = (1, 9, 19, 9)
         
         
 class ItemSample(GraphicsWidget):
@@ -163,7 +163,7 @@ class ItemSample(GraphicsWidget):
         if not isinstance(self.item, ScatterPlotItem):
             p.setPen(fn.mkPen(opts['pen']))
             #p.drawLine(2, 18, 18, 2)
-            p.drawLine(2, 9, 18, 9)
+            p.drawLine(1, 9, 19, 9)
         
         symbol = opts.get('symbol', None)
         if symbol is not None:
