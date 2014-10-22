@@ -181,7 +181,8 @@ class PlotItem(GraphicsWidget):
         self.setTitle(None)  ## hide
 
         self.plotLabel = LabelItem('', size='14pt')
-        self.layout.addItem(self.plotLabel, 0, 0)
+        #self.layout.addItem(self.plotLabel, 0, 0)
+        self.plotLabel.setParentItem(self)
         self.setPlotLabel(plotlabel=None)  ## hide
         
         for i in range(4):

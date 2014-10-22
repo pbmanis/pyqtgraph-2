@@ -105,6 +105,9 @@ class MatplotlibExporter(Exporter):
             ax.set_xlabel(xlabel)  # place the labels.
             ax.set_ylabel(ylabel)
             mpw.draw()
+
+
+
         else:
             raise Exception("Matplotlib export currently only works with plot items")
                 
