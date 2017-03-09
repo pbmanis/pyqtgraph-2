@@ -1,4 +1,4 @@
-import subprocess, atexit, os, sys, time, random, socket, signal
+import subprocess, atexit, os, sys, time, random, socket, signal, psutil
 import multiprocessing.connection
 try:
     import cPickle as pickle
@@ -321,7 +321,11 @@ class ForkedProcess(RemoteEventHandler):
         #os.kill(pid, 9)  
         try:
             self.close(callSync='sync', timeout=timeout, noCleanup=True)  ## ask the child process to exit and require that it return a confirmation.
-            os.waitpid(self.childPid, 0)
+            if psutil.pid_exists(self.childPid):  # only wait on the process if it is still running
+                os.waitpid(self.childPid, 0)
+            else:
+                pass
+#                print 'child PID not running', self.childPid
         except IOError:  ## probably remote process has already quit
             pass  
         self.hasJoined = True
