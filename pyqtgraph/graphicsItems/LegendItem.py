@@ -130,6 +130,13 @@ class LegendItem(GraphicsWidget, GraphicsWidgetAnchor):
         if ev.button() == QtCore.Qt.LeftButton:
             dpos = ev.pos() - ev.lastPos()
             self.autoAnchor(self.pos() + dpos)
+    
+    def setLegendLine(self, angle = '45'):
+        if angle == 45:
+            self.legendLine = (2, 18, 18, 2)
+        if angle == 0:
+            self.legendLine = (1, 9, 19, 9)
+        
         
 class ItemSample(GraphicsWidget):
     """ Class responsible for drawing a single item in a LegendItem (sans label).
@@ -155,7 +162,8 @@ class ItemSample(GraphicsWidget):
         
         if not isinstance(self.item, ScatterPlotItem):
             p.setPen(fn.mkPen(opts['pen']))
-            p.drawLine(2, 18, 18, 2)
+            #p.drawLine(2, 18, 18, 2)
+            p.drawLine(1, 9, 19, 9)
         
         symbol = opts.get('symbol', None)
         if symbol is not None:

@@ -101,7 +101,7 @@ class PlotItem(GraphicsWidget):
     
     lastFileDir = None
     
-    def __init__(self, parent=None, name=None, labels=None, title=None, viewBox=None, axisItems=None, enableMenu=True, **kargs):
+    def __init__(self, parent=None, name=None, labels=None, title=None, plotlabel=None, viewBox=None, axisItems=None, enableMenu=True, **kargs):
         """
         Create a new PlotItem. All arguments are optional.
         Any extra keyword arguments are passed to PlotItem.plot().
@@ -109,6 +109,7 @@ class PlotItem(GraphicsWidget):
         ==============  ==========================================================================================
         **Arguments:**
         *title*         Title to display at the top of the item. Html is allowed.
+        *plotlabel*     Label to display in the upper left corner of the plot (as a "panel label"). Html is allowed.
         *labels*        A dictionary specifying the axis labels to display::
                    
                             {'left': (args), 'bottom': (args), ...}
@@ -183,7 +184,10 @@ class PlotItem(GraphicsWidget):
         self.titleLabel = LabelItem('', size='11pt', parent=self)
         self.layout.addItem(self.titleLabel, 0, 1)
         self.setTitle(None)  ## hide
-        
+
+        self.plotLabel = LabelItem('', size='14pt')
+        self.layout.addItem(self.plotLabel, 0, 0)
+        self.setPlotLabel(plotlabel=None)  ## hide
         
         for i in range(4):
             self.layout.setRowPreferredHeight(i, 0)
@@ -285,7 +289,10 @@ class PlotItem(GraphicsWidget):
                 
         if title is not None:
             self.setTitle(title)
-        
+
+        if plotlabel is not None:
+            self.setPlotLabel(plotlabel=plotlabel)
+            
         if len(kargs) > 0:
             self.plot(**kargs)
         
@@ -1105,13 +1112,15 @@ class PlotItem(GraphicsWidget):
         
     def setLabels(self, **kwds):
         """
-        Convenience function allowing multiple labels and/or title to be set in one call.
-        Keyword arguments can be 'title', 'left', 'bottom', 'right', or 'top'.
+        Convenience function allowing multiple labels and/or title or plotlabel to be set in one call.
+        Keyword arguments can be 'title', 'plotlabel', 'left', 'bottom', 'right', or 'top'.
         Values may be strings or a tuple of arguments to pass to setLabel.
         """
         for k,v in kwds.items():
             if k == 'title':
                 self.setTitle(v)
+            elif k == 'plotlabel':
+                self.setPlotLabel(plotlabel=v)
             else:
                 if isinstance(v, basestring):
                     v = (v,)
@@ -1139,6 +1148,22 @@ class PlotItem(GraphicsWidget):
             self.layout.setRowFixedHeight(0, 30)
             self.titleLabel.setVisible(True)
             self.titleLabel.setText(title, **args)
+
+    def setPlotLabel(self, plotlabel=None, **args):
+        """
+        Set the title of the plot. Basic HTML formatting is allowed.
+        If title is None, then the title will be hidden.
+        """
+        if plotlabel is None:
+            self.plotLabel.setVisible(False)
+            self.layout.setRowFixedHeight(0, 0)
+            self.plotLabel.setMaximumHeight(0)
+        else:
+            self.plotLabel.setMaximumHeight(30)
+            self.layout.setRowFixedHeight(0, 30)
+            self.plotLabel.setVisible(True)
+            self.plotLabel.setText(plotlabel, **args)
+
 
     def showAxis(self, axis, show=True):
         """
