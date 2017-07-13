@@ -14,11 +14,13 @@ else:
     from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
     from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 
-from matplotlib.figure import Figure
+#from matplotlib.figure import Figure
+# use pyplot to provide access to savefig in the exporter
+import matplotlib.pyplot as mpl
 
 class MatplotlibWidget(QtGui.QWidget):
     """
-    Implements a Matplotlib figure inside a QWidget.
+    Implements a Matplotlib.pyplot figure inside a QWidget.
     Use getFigure() and redraw() to interact with matplotlib.
     
     Example::
@@ -31,7 +33,7 @@ class MatplotlibWidget(QtGui.QWidget):
     
     def __init__(self, size=(5.0, 4.0), dpi=100):
         QtGui.QWidget.__init__(self)
-        self.fig = Figure(size, dpi=dpi)
+        self.fig = mpl.figure(figsize=size, dpi=dpi)
         self.canvas = FigureCanvas(self.fig)
         self.canvas.setParent(self)
         self.toolbar = NavigationToolbar(self.canvas, self)

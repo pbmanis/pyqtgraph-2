@@ -105,6 +105,11 @@ class MatplotlibExporter(Exporter):
             ax.set_xlabel(xlabel)  # place the labels.
             ax.set_ylabel(ylabel)
             mpw.draw()
+            if fileName is not None:
+                import matplotlib.pyplot as mplp
+                print 'exporting file: ', fileName
+                #print dir(mpw.mpl)
+                mplp.savefig(fileName)
         else:
             raise Exception("Matplotlib export currently only works with plot items")
                 

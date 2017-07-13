@@ -189,7 +189,7 @@ def _generateItemSvg(item, nodes=None, root=None):
         if USE_PYSIDE:
             xmlStr = str(arr)
         else:
-            xmlStr = bytes(arr).decode('utf-8')
+            xmlStr = bytes(arr)#.decode('utf-8')
         doc = xml.parseString(xmlStr)
         
     try:
