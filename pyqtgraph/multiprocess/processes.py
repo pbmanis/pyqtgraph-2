@@ -328,6 +328,12 @@ class ForkedProcess(RemoteEventHandler):
 #                print 'child PID not running', self.childPid
         except IOError:  ## probably remote process has already quit
             pass  
+        
+        try:
+            os.waitpid(self.childPid, 0)
+        except OSError:  ## probably remote process has already quit
+            pass
+        
         self.hasJoined = True
 
     def kill(self):
