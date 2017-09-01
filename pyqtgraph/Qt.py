@@ -9,7 +9,7 @@ This module exists to smooth out some of the differences between PySide and PyQt
 
 """
 
-import sys, re
+import os, sys, re, time
 
 from .python2_3 import asUnicode
 
@@ -17,17 +17,19 @@ PYSIDE = 'PySide'
 PYQT4 = 'PyQt4'
 PYQT5 = 'PyQt5'
 
-QT_LIB = None
+QT_LIB = os.getenv('PYQTGRAPH_QT_LIB')
 
-## Automatically determine whether to use PyQt or PySide.
+## Automatically determine whether to use PyQt or PySide (unless specified by
+## environment variable).
 ## This is done by first checking to see whether one of the libraries
 ## is already imported. If not, then attempt to import PyQt4, then PySide.
-libOrder = [PYQT4, PYSIDE, PYQT5]
+if QT_LIB is None:
+    libOrder = [PYQT4, PYSIDE, PYQT5]
 
-for lib in libOrder:
-    if lib in sys.modules:
-        QT_LIB = lib
-        break
+    for lib in libOrder:
+        if lib in sys.modules:
+            QT_LIB = lib
+            break
 
 if QT_LIB is None:
     for lib in libOrder:
@@ -38,13 +40,22 @@ if QT_LIB is None:
         except ImportError:
             pass
 
-if QT_LIB == None:
+if QT_LIB is None:
     raise Exception("PyQtGraph requires one of PyQt4, PyQt5 or PySide; none of these packages could be imported.")
 
 if QT_LIB == PYSIDE:
     from PySide import QtGui, QtCore, QtOpenGL, QtSvg
     try:
         from PySide import QtTest
+        if not hasattr(QtTest.QTest, 'qWait'):
+            @staticmethod
+            def qWait(msec):
+                start = time.time()
+                QtGui.QApplication.processEvents()
+                while time.time() < start + msec * 0.001:
+                    QtGui.QApplication.processEvents()
+            QtTest.QTest.qWait = qWait
+                
     except ImportError:
         pass
     import PySide
@@ -139,7 +150,7 @@ elif QT_LIB == PYQT5:
     
     # We're using PyQt5 which has a different structure so we're going to use a shim to
     # recreate the Qt4 structure for Qt5
-    from PyQt5 import QtGui, QtCore, QtWidgets, Qt, uic
+    from PyQt5 import QtGui, QtCore, QtWidgets, uic
     try:
         from PyQt5 import QtSvg
     except ImportError:
@@ -148,12 +159,25 @@ elif QT_LIB == PYQT5:
         from PyQt5 import QtOpenGL
     except ImportError:
         pass
+    try:
+        from PyQt5 import QtTest
+        QtTest.QTest.qWaitForWindowShown = QtTest.QTest.qWaitForWindowExposed
+    except ImportError:
+        pass
 
     # Re-implement deprecated APIs
-    def scale(self, sx, sy):
-        tr = self.transform()
-        tr.scale(sx, sy)
-        self.setTransform(tr)
+
+    __QGraphicsItem_scale = QtWidgets.QGraphicsItem.scale
+
+    def scale(self, *args):
+        if args:
+            sx, sy = args
+            tr = self.transform()
+            tr.scale(sx, sy)
+            self.setTransform(tr)
+        else:
+            return __QGraphicsItem_scale(self)
+
     QtWidgets.QGraphicsItem.scale = scale
 
     def rotate(self, angle):
@@ -172,8 +196,8 @@ elif QT_LIB == PYQT5:
         self.setContentsMargins(i, i, i, i)
     QtWidgets.QGridLayout.setMargin = setMargin
 
-    def setResizeMode(self, mode):
-        self.setSectionResizeMode(mode)
+    def setResizeMode(self, *args):
+        self.setSectionResizeMode(*args)
     QtWidgets.QHeaderView.setResizeMode = setResizeMode
 
     
@@ -190,6 +214,9 @@ elif QT_LIB == PYQT5:
             setattr(QtGui, o, getattr(QtWidgets,o) )
     
     VERSION_INFO = 'PyQt5 ' + QtCore.PYQT_VERSION_STR + ' Qt ' + QtCore.QT_VERSION_STR
+
+else:
+    raise ValueError("Invalid Qt lib '%s'" % QT_LIB)
 
 # Common to PyQt4 and 5
 if QT_LIB.startswith('PyQt'):
