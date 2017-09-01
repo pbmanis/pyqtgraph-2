@@ -98,10 +98,11 @@ def initShaders():
                     gl_Position = ftransform();
                 }
             """),
+            # float p = dot(normal, normalize(vec3(1.0, -1.0, -1.0)));
             FragmentShader("""
                 varying vec3 normal;
                 void main() {
-                    float p = dot(normal, normalize(vec3(1.0, -1.0, -1.0)));
+                    float p = dot(normal, normalize(vec3(0.5, 1.0, 1.0)));
                     p = p < 0. ? 0. : p * 0.8;
                     vec4 color = gl_Color;
                     color.x = color.x * (0.2 + p);
