@@ -3,6 +3,7 @@ import numpy as np
 from OpenGL.GL import *
 from .. GLGraphicsItem import GLGraphicsItem
 from ... import QtGui
+from ... import functions as fn
 
 __all__ = ['GLGridItem']
 
@@ -22,6 +23,10 @@ class GLGridItem(GLGraphicsItem):
         self.setSize(size=size)
         self.setSpacing(1, 1, 1)
     
+        if color is None:
+            color = (255, 255, 255, 80)
+        self.setColor(color)
+
     def setSize(self, x=None, y=None, z=None, size=None):
         """
         Set the size of the axes (in its local coordinate system; this does not affect the transform)
@@ -51,6 +56,12 @@ class GLGridItem(GLGraphicsItem):
         
     def spacing(self):
         return self.__spacing[:]
+    
+    def setColor(self, args):
+        """
+        set the color of the grid 
+        """
+        self.color = fn.glColor(args)
         
     def paint(self):
         self.setupGLState()
@@ -67,7 +78,8 @@ class GLGridItem(GLGraphicsItem):
         xs,ys,zs = self.spacing()
         xvals = np.arange(-x/2., x/2. + xs*0.001, xs) 
         yvals = np.arange(-y/2., y/2. + ys*0.001, ys) 
-        glColor4f(1, 1, 1, .3)
+#        glColor4f(1, 1, 1, .3)
+        glColor4f(*self.color)
         for x in xvals:
             glVertex3f(x, yvals[0], 0)
             glVertex3f(x,  yvals[-1], 0)
