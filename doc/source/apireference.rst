@@ -5,7 +5,8 @@ Contents:
 
 .. toctree::
     :maxdepth: 2
-
+    apireference
+    
     config_options
     functions
     graphicsItems/index
