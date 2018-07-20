@@ -27,7 +27,9 @@ except:
     USE_HDF5 = False
     HAVE_HDF5 = False
 
-
+if HAVE_HDF5:
+    import h5py.highlevel
+    
 def axis(name=None, cols=None, values=None, units=None):
     """Convenience function for generating axis descriptions when defining MetaArrays"""
     ax = {}
