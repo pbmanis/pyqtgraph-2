@@ -15,9 +15,13 @@ Widget used for displaying 2D or 3D data. Features:
 import os, sys
 import numpy as np
 
-from ..Qt import QtCore, QtGui, USE_PYSIDE
-if USE_PYSIDE:
+from ..Qt import QtCore, QtGui, QT_LIB
+if QT_LIB == 'PySide':
     from .ImageViewTemplate_pyside import *
+elif QT_LIB == 'PySide2':
+    from .ImageViewTemplate_pyside2 import *
+elif QT_LIB == 'PyQt5':
+    from .ImageViewTemplate_pyqt5 import *
 else:
     from .ImageViewTemplate_pyqt import *
     
@@ -633,8 +637,12 @@ class ImageView(QtGui.QWidget):
             
         cax = self.axes['c']
         if cax is None:
+            if data.size == 0:
+                return [(0, 0)]
             return [(float(nanmin(data)), float(nanmax(data)))]
         else:
+            if data.size == 0:
+                return [(0, 0)] * data.shape[-1]
             return [(float(nanmin(data.take(i, axis=cax))), 
                      float(nanmax(data.take(i, axis=cax)))) for i in range(data.shape[-1])]
 
@@ -782,9 +790,11 @@ class ImageView(QtGui.QWidget):
             
     def exportClicked(self):
         fileName = QtGui.QFileDialog.getSaveFileName()
+        if isinstance(fileName, tuple):
+            fileName = fileName[0]  # Qt4/5 API difference
         if fileName == '':
             return
-        self.export(fileName)
+        self.export(str(fileName))
         
     def buildMenu(self):
         self.menu = QtGui.QMenu()

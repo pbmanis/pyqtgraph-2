@@ -12,9 +12,10 @@ import decimal, re
 import ctypes
 import sys, struct
 from .python2_3 import asUnicode, basestring
-from .Qt import QtGui, QtCore, USE_PYSIDE
+from .Qt import QtGui, QtCore, QT_LIB
 from . import getConfigOption, setConfigOptions
-from . import debug
+from . import debug, reload
+from .reload import getPreviousVersion 
 from .metaarray import MetaArray
 
 
@@ -1219,7 +1220,7 @@ def makeQImage(imgData, alpha=None, copy=True, transpose=True):
     if copy is True and copied is False:
         imgData = imgData.copy()
         
-    if USE_PYSIDE:
+    if QT_LIB in ['PySide', 'PySide2']:
         ch = ctypes.c_char.from_buffer(imgData, 0)
         
         # Bug in PySide + Python 3 causes refcount for image data to be improperly 
@@ -1277,7 +1278,7 @@ def imageToArray(img, copy=False, transpose=True):
     """
     fmt = img.format()
     ptr = img.bits()
-    if USE_PYSIDE:
+    if QT_LIB in ['PySide', 'PySide2']:
         arr = np.frombuffer(ptr, dtype=np.ubyte)
     else:
         ptr.setsize(img.byteCount())
@@ -2430,3 +2431,45 @@ def toposort(deps, nodes=None, seen=None, stack=None, depth=0):
         sorted.extend( toposort(deps, deps[n], seen, stack+[n], depth=depth+1))
         sorted.append(n)
     return sorted
+
+
+def disconnect(signal, slot):
+    """Disconnect a Qt signal from a slot.
+
+    This method augments Qt's Signal.disconnect():
+
+    * Return bool indicating whether disconnection was successful, rather than
+      raising an exception
+    * Attempt to disconnect prior versions of the slot when using pg.reload    
+    """
+    while True:
+        try:
+            signal.disconnect(slot)
+            return True
+        except (TypeError, RuntimeError):
+            slot = reload.getPreviousVersion(slot)
+            if slot is None:
+                return False
+
+
+class SignalBlock(object):
+    """Class used to temporarily block a Qt signal connection::
+
+        with SignalBlock(signal, slot):
+            # do something that emits a signal; it will
+            # not be delivered to slot
+    """
+    def __init__(self, signal, slot):
+        self.signal = signal
+        self.slot = slot
+
+    def __enter__(self):
+        self.reconnect = disconnect(self.signal, self.slot)
+        return self
+
+    def __exit__(self, *args):
+        if self.reconnect:
+            self.signal.connect(self.slot)
+
+
+

@@ -4,7 +4,7 @@ PyQtGraph - Scientific Graphics and GUI Library for Python
 www.pyqtgraph.org
 """
 
-__version__ = '0.19.0'
+__version__ = '0.11.0.dev0'
 
 ### import all the goodies and add some helper functions for easy CLI use
 
@@ -258,6 +258,7 @@ from .widgets.VerticalLabel import *
 from .widgets.FeedbackButton import * 
 from .widgets.ColorButton import * 
 from .widgets.DataTreeWidget import * 
+from .widgets.DiffTreeWidget import * 
 from .widgets.GraphicsView import * 
 from .widgets.LayoutWidget import * 
 from .widgets.TableWidget import * 

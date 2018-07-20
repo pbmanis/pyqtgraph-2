@@ -662,21 +662,13 @@ class ViewBox(GraphicsWidget):
         cause slight changes due to floating-point error).
         """
         if s is not None:
-            scale = Point(s)
-        else:
-            scale = [x, y]
+            x, y = s[0], s[1]
         
-        affect = [True, True]
-        if scale[0] is None and scale[1] is None:
+        affect = [x is not None, y is not None]
+        if not any(affect):
             return
-        elif scale[0] is None:
-            affect[0] = False
-            scale[0] = 1.0
-        elif scale[1] is None:
-            affect[1] = False
-            scale[1] = 1.0
-            
-        scale = Point(scale)
+        
+        scale = Point([1.0 if x is None else x, 1.0 if y is None else y])
             
         if self.state['aspectLocked'] is not False:
             scale[0] = scale[1]
@@ -847,10 +839,6 @@ class ViewBox(GraphicsWidget):
                         childRange[ax][1] += wp
                     targetRect[ax] = childRange[ax]
                     args['xRange' if ax == 0 else 'yRange'] = targetRect[ax]
-            if len(args) == 0:
-                return
-            args['padding'] = 0
-            args['disableAutoRange'] = False
             
              # check for and ignore bad ranges
             for k in ['xRange', 'yRange']:
@@ -858,6 +846,11 @@ class ViewBox(GraphicsWidget):
                     if not np.all(np.isfinite(args[k])):
                         r = args.pop(k)
                         #print("Warning: %s is invalid: %s" % (k, str(r))
+            
+            if len(args) == 0:
+                return
+            args['padding'] = 0
+            args['disableAutoRange'] = False
                         
             self.setRange(**args)
         finally:
@@ -1131,19 +1124,19 @@ class ViewBox(GraphicsWidget):
         """Return the bounding rect of the item in view coordinates"""
         return self.mapSceneToView(item.sceneBoundingRect()).boundingRect()
 
-    def wheelEvent(self, ev, axis=None):
-        mask = np.array(self.state['mouseEnabled'], dtype=np.float)
+    def wheelEvent(self, ev, axis=None):        
         if axis is not None and axis >= 0 and axis < len(mask):
-            mv = mask[axis]
-            mask[:] = 0
-            mask[axis] = mv
-        s = ((mask * 0.02) + 1) ** (ev.delta() * self.state['wheelScaleFactor']) # actual scaling factor
-        
+            mask = [False, False]
+            mask[axis] = self.state['mouseEnabled'][axis]
+        else:
+            mask = self.state['mouseEnabled'][:]
+        s = 1.02 ** (ev.delta() * self.state['wheelScaleFactor']) # actual scaling factor
+        s = [(None if m is False else s) for m in mask]
         center = Point(fn.invertQTransform(self.childGroup.transform()).map(ev.pos()))
         
         self._resetTarget()
         self.scaleBy(s, center)
-        self.sigRangeChangedManually.emit(self.state['mouseEnabled'])
+        self.sigRangeChangedManually.emit(mask)
         ev.accept()
         
     def mouseClickEvent(self, ev):
