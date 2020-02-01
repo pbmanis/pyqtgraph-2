@@ -1124,8 +1124,22 @@ class ViewBox(GraphicsWidget):
         """Return the bounding rect of the item in view coordinates"""
         return self.mapSceneToView(item.sceneBoundingRect()).boundingRect()
 
-    def wheelEvent(self, ev, axis=None):        
-        if axis is not None and axis >= 0 and axis < len(mask):
+    # def wheelEvent(self, ev, axis=None):
+    #     if axis is not None and axis >= 0 and axis < len(mask):
+    #         mask = [False, False]
+    #         mask[axis] = self.state['mouseEnabled'][axis]
+    #     else:
+    #         mask = self.state['mouseEnabled'][:]
+    #     s = 1.02 ** (ev.delta() * self.state['wheelScaleFactor']) # actual scaling factor
+    #     s = [(None if m is False else s) for m in mask]
+    #     center = Point(fn.invertQTransform(self.childGroup.transform()).map(ev.pos()))
+    #
+    #     self._resetTarget()
+    #     self.scaleBy(s, center)
+    #     self.sigRangeChangedManually.emit(mask)
+    #     ev.accept()
+    def wheelEvent(self, ev, axis=None):
+        if axis in (0, 1):
             mask = [False, False]
             mask[axis] = self.state['mouseEnabled'][axis]
         else:
@@ -1138,7 +1152,7 @@ class ViewBox(GraphicsWidget):
         self.scaleBy(s, center)
         self.sigRangeChangedManually.emit(mask)
         ev.accept()
-        
+                
     def mouseClickEvent(self, ev):
         if ev.button() == QtCore.Qt.RightButton and self.menuEnabled():
             ev.accept()
