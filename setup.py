@@ -142,6 +142,7 @@ setup(
     package_data={'pyqtgraph.examples': ['optics/*.gz', 'relativity/presets/*.cfg']},
     install_requires = [
         'numpy',
+        'PyOpenGL==3.1.5'
         ],
     **setupOpts
 )
