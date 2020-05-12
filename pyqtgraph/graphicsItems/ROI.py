@@ -1102,7 +1102,7 @@ class ROI(GraphicsObject):
             return bounds, tr
 
     def getArrayRegion(self, data, img, axes=(0,1), returnMappedCoords=False, **kwds):
-        """Use the position and orientation of this ROI relative to an imageItem 
+        r"""Use the position and orientation of this ROI relative to an imageItem 
         to pull a slice from an array.
         
         =================== ====================================================
@@ -1524,7 +1524,7 @@ class TestROI(ROI):
 
 
 class RectROI(ROI):
-    """
+    r"""
     Rectangular ROI subclass with a single scale handle at the top-right corner.
     
     ============== =============================================================
@@ -1553,7 +1553,7 @@ class RectROI(ROI):
             self.addScaleHandle([0.5, 1], [0.5, center[1]])
 
 class LineROI(ROI):
-    """
+    r"""
     Rectangular ROI subclass with scale-rotate handles on either side. This
     allows the ROI to be positioned as if moving the ends of a line segment.
     A third handle controls the width of the ROI orthogonal to its "line" axis.
@@ -1587,7 +1587,7 @@ class LineROI(ROI):
 
         
 class MultiRectROI(QtGui.QGraphicsObject):
-    """
+    r"""
     Chain of rectangular ROIs connected by handles. 
     
     This is generally used to mark a curved path through 
@@ -1726,7 +1726,7 @@ class MultiLineROI(MultiRectROI):
 
         
 class EllipseROI(ROI):
-    """
+    r"""
     Elliptical ROI subclass with one scale handle and one rotation handle.
     
     
@@ -1811,7 +1811,7 @@ class EllipseROI(ROI):
         
         
 class CircleROI(EllipseROI):
-    """
+    r"""
     Circular ROI subclass. Behaves exactly as EllipseROI, but may only be scaled
     proportionally to maintain its aspect ratio.
     
@@ -1880,7 +1880,7 @@ class PolygonROI(ROI):
 
     
 class PolyLineROI(ROI):
-    """
+    r"""
     Container class for multiple connected LineSegmentROIs.
     
     This class allows the user to draw paths of multiple line segments.
@@ -2076,7 +2076,7 @@ class PolyLineROI(ROI):
 
 
 class LineSegmentROI(ROI):
-    """
+    r"""
     ROI subclass with two freely-moving handles defining a line.
     
     ============== =============================================================

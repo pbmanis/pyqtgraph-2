@@ -19,7 +19,7 @@ def __reload__(old):
     PARAM_NAMES.update(old.get('PARAM_NAMES', {}))
 
 class Parameter(QtCore.QObject):
-    """
+    r"""
     A Parameter is the basic unit of data in a parameter tree. Each parameter has
     a name, a type, a value, and several other properties that modify the behavior of the 
     Parameter. Parameters may have parent / child / sibling relationships to construct
@@ -107,7 +107,7 @@ class Parameter(QtCore.QObject):
         return cls(**opts)
     
     def __init__(self, **opts):
-        """
+        r"""
         Initialize a Parameter object. Although it is rare to directly create a
         Parameter instance, the options available to this method are also allowed
         by most Parameter subclasses.
@@ -612,7 +612,7 @@ class Parameter(QtCore.QObject):
 
     def incrementName(self, name):
         ## return an unused name by adding a number to the name given
-        base, num = re.match('(.*)(\d*)', name).groups()
+        base, num = re.match(r'(.*)(\d*)', name).groups()
         numLen = len(num)
         if numLen == 0:
             num = 2
