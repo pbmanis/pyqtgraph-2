@@ -1019,6 +1019,7 @@ class MetaArray(object):
             data[k] = val
         for k in root:
             obj = root[k]
+            print(type(obj))
             if isinstance(obj,h5pyFile.Group): # h5py.highlevel.Group):
                 val = MetaArray.readHDF5Meta(obj)
             elif isinstance(obj,h5pyFile.Dataset): # h5py.highlevel.Dataset):
