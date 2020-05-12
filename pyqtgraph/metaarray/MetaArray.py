@@ -28,7 +28,7 @@ except:
     HAVE_HDF5 = False
 
 if HAVE_HDF5:
-    import h5py.highlevel
+    from h5py import File as h5pyFile
     
 def axis(name=None, cols=None, values=None, units=None):
     """Convenience function for generating axis descriptions when defining MetaArrays"""
@@ -1019,9 +1019,9 @@ class MetaArray(object):
             data[k] = val
         for k in root:
             obj = root[k]
-            if isinstance(obj, h5py.highlevel.Group):
+            if isinstance(obj,h5pyFile.Group): # h5py.highlevel.Group):
                 val = MetaArray.readHDF5Meta(obj)
-            elif isinstance(obj, h5py.highlevel.Dataset):
+            elif isinstance(obj,h5pyFile.Dataset): # h5py.highlevel.Dataset):
                 if mmap:
                     val = MetaArray.mapHDF5Array(obj)
                 else:
