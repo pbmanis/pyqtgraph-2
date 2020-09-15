@@ -162,6 +162,8 @@ def parseString(lines, start=0):
                 except:
                     pass
             if re.search(r'\S', v) and v[0] != '#':  ## eval the value
+                if (v[0] == '[' or v[0] == '(') and (v[-1] == ']' or v[-1] == ')'):
+                     v = v.replace('L', '')
                 try:
                     val = eval(v, local)
                 except:
