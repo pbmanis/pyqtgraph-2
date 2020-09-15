@@ -45,7 +45,10 @@ class GLViewWidget(QtOpenGL.QGLWidget):
         }
         self.setBackgroundColor('k')
         self.items = []
-        self.noRepeatKeys = [QtCore.Qt.Key_Right, QtCore.Qt.Key_Left, QtCore.Qt.Key_Up, QtCore.Qt.Key_Down, QtCore.Qt.Key_PageUp, QtCore.Qt.Key_PageDown]
+        self.noRepeatKeys = [QtCore.Qt.Key_Right, QtCore.Qt.Key_Left, 
+             QtCore.Qt.Key_Up, QtCore.Qt.Key_Down, QtCore.Qt.Key_PageUp,
+             QtCore.Qt.Key_PageDown,
+             QtCore.Qt.Key_P, QtCore.Qt.Key_D, QtCore.Qt.Key_Q]
         self.keysPressed = {}
         self.keyTimer = QtCore.QTimer()
         self.keyTimer.timeout.connect(self.evalKeyState)
@@ -262,7 +265,7 @@ class GLViewWidget(QtOpenGL.QGLWidget):
     def orbit(self, azim, elev):
         """Orbits the camera around the center position. *azim* and *elev* are given in degrees."""
         self.opts['azimuth'] += azim
-        self.opts['elevation'] = np.clip(self.opts['elevation'] + elev, -90, 90)
+        self.opts['elevation'] = np.clip(self.opts['elevation'] + elev, -180, 180)
         self.update()
         
     def pan(self, dx, dy, dz, relative='global'):
@@ -418,7 +421,19 @@ class GLViewWidget(QtOpenGL.QGLWidget):
                     pass
                 elif key == QtCore.Qt.Key_PageDown:
                     pass
+                elif key == QtCore.Qt.Key_P:
+                    print(self.cameraPosition())
+                elif key == QtCore.Qt.Key_D:
+                    for p in ['distance', 'elevation', 'azimuth']:
+                        s = 1.0
+                        # if si in ['elevation', 'azimuth']:
+                        #     s =np.pi/180.
+                        print(f"{p:s} = {self.opts[p]*s:f}")
+                
+                elif key == QtCore.Qt.Key_Q: # quit
+                    exit()
                 self.keyTimer.start(16)
+                print(self.cameraPosition())
         else:
             self.keyTimer.stop()
 
@@ -451,7 +466,6 @@ class GLViewWidget(QtOpenGL.QGLWidget):
         pixels[...,0] = pixels[...,2]
         pixels[...,2] = tmp
         pixels = pixels[::-1] # flip vertical
-        
         img = fn.makeQImage(pixels, transpose=False)
         return img
         
@@ -461,53 +475,54 @@ class GLViewWidget(QtOpenGL.QGLWidget):
         self.makeCurrent()
         tex = None
         fb = None
-        try:
-            output = np.empty((w, h, 4), dtype=np.ubyte)
-            fb = glfbo.glGenFramebuffers(1)
-            glfbo.glBindFramebuffer(glfbo.GL_FRAMEBUFFER, fb )
-            
-            glEnable(GL_TEXTURE_2D)
-            tex = glGenTextures(1)
-            glBindTexture(GL_TEXTURE_2D, tex)
-            texwidth = textureSize
-            data = np.zeros((texwidth,texwidth,4), dtype=np.ubyte)
-            
-            ## Test texture dimensions first
-            glTexImage2D(GL_PROXY_TEXTURE_2D, 0, GL_RGBA, texwidth, texwidth, 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
-            if glGetTexLevelParameteriv(GL_PROXY_TEXTURE_2D, 0, GL_TEXTURE_WIDTH) == 0:
-                raise Exception("OpenGL failed to create 2D texture (%dx%d); too large for this hardware." % shape[:2])
-            ## create teture
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texwidth, texwidth, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.transpose((1,0,2)))
-            
-            self.opts['viewport'] = (0, 0, w, h)  # viewport is the complete image; this ensures that paintGL(region=...) 
-                                                  # is interpreted correctly.
-            p2 = 2 * padding
-            for x in range(-padding, w-padding, texwidth-p2):
-                for y in range(-padding, h-padding, texwidth-p2):
-                    x2 = min(x+texwidth, w+padding)
-                    y2 = min(y+texwidth, h+padding)
-                    w2 = x2-x
-                    h2 = y2-y
-                    
-                    ## render to texture
-                    glfbo.glFramebufferTexture2D(glfbo.GL_FRAMEBUFFER, glfbo.GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0)
-                    
-                    self.paintGL(region=(x, h-y-h2, w2, h2), viewport=(0, 0, w2, h2))  # only render sub-region
-                    glBindTexture(GL_TEXTURE_2D, tex) # fixes issue #366
-                    
-                    ## read texture back to array
-                    data = glGetTexImage(GL_TEXTURE_2D, 0, format, type)
-                    data = np.fromstring(data, dtype=np.ubyte).reshape(texwidth,texwidth,4).transpose(1,0,2)[:, ::-1]
-                    output[x+padding:x2-padding, y+padding:y2-padding] = data[padding:w2-padding, -(h2-padding):-padding]
-                    
-        finally:
-            self.opts['viewport'] = None
-            glfbo.glBindFramebuffer(glfbo.GL_FRAMEBUFFER, 0)
-            glBindTexture(GL_TEXTURE_2D, 0)
-            if tex is not None:
-                glDeleteTextures([tex])
-            if fb is not None:
-                glfbo.glDeleteFramebuffers([fb])
+        # try:
+        output = np.empty((w, h, 4), dtype=np.ubyte)
+        fb = glfbo.glGenFramebuffers(1)
+        glfbo.glBindFramebuffer(glfbo.GL_FRAMEBUFFER, fb )
+        
+        glEnable(GL_TEXTURE_2D)
+        tex = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, tex)
+        texwidth = textureSize
+        data = np.zeros((texwidth,texwidth,4), dtype=np.ubyte)
+        
+        ## Test texture dimensions first
+        glTexImage2D(GL_PROXY_TEXTURE_2D, 0, GL_RGBA, texwidth, texwidth, 0, GL_RGBA, GL_UNSIGNED_BYTE, None)
+        if glGetTexLevelParameteriv(GL_PROXY_TEXTURE_2D, 0, GL_TEXTURE_WIDTH) == 0:
+            raise Exception("OpenGL failed to create 2D texture (%dx%d); too large for this hardware." % shape[:2])
+        ## create teture
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, texwidth, texwidth, 0, GL_RGBA, GL_UNSIGNED_BYTE, data.transpose((1,0,2)))
+        
+        self.opts['viewport'] = (0, 0, w, h)  # viewport is the complete image; this ensures that paintGL(region=...) 
+                                              # is interpreted correctly.
+        
+        p2 = 2 * padding
+
+        for x in range(-padding, w-padding, texwidth-p2):
+            for y in range(-padding, h-padding, texwidth-p2):
+                x2 = min(x+texwidth, w+padding)
+                y2 = min(y+texwidth, h+padding)
+                w2 = x2-x
+                h2 = y2-y
+               ## render to texture
+                glfbo.glFramebufferTexture2D(glfbo.GL_FRAMEBUFFER, glfbo.GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, tex, 0)
+
+                self.paintGL(region=(x, h-y-h2, w2, h2), viewport=(0, 0, w2, h2))  # only render sub-region
+                glBindTexture(GL_TEXTURE_2D, tex) # fixes issue #366
+
+                ## read texture back to array
+                data = glGetTexImage(GL_TEXTURE_2D, 0, format, type)
+                data = np.fromstring(data, dtype=np.ubyte).reshape(texwidth,texwidth,4).transpose(1,0,2)[:, ::-1]
+                output[x+padding:x2-padding, y+padding:y2-padding] = data[padding:w2-padding, -(h2-padding):-padding]
+
+        # finally:
+        self.opts['viewport'] = None
+        glfbo.glBindFramebuffer(glfbo.GL_FRAMEBUFFER, 0)
+        glBindTexture(GL_TEXTURE_2D, 0)
+        if tex is not None:
+            glDeleteTextures([tex])
+        if fb is not None:
+            glfbo.glDeleteFramebuffers([fb])
             
         return output
         
